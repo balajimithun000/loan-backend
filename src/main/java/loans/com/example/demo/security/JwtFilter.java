@@ -30,8 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
             "/error",
             "/health",
             "/actuator/health",
-            "/api/users/register",
             "/api/users/login",
+            "/api/users/register",
             "/api/users/admin/register"
     );
 

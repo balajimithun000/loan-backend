@@ -38,6 +38,7 @@ public class SecurityConfig {
                         // 🔓 PUBLIC ENDPOINTS
                         .requestMatchers(
                                 "/",
+                                "/health",
                                 "/error",
                                 "/actuator/health"
                         ).permitAll()
