@@ -40,7 +40,7 @@ public class SecurityConfig {
                                 "/",
                                 "/health",
                                 "/error",
-                                "/actuator/health"
+                                "/actuator/**"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.POST,
