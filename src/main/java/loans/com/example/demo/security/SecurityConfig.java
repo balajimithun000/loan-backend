@@ -35,10 +35,10 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 PUBLIC ENDPOINTS (NO TOKEN)
+                        // 🔓 PUBLIC ENDPOINTS
                         .requestMatchers(
                                 "/",
-                                "/health",
+                                "/error",
                                 "/actuator/health"
                         ).permitAll()
 
@@ -52,7 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/**").hasAuthority("USER")
 
-                        // 🔒 EVERYTHING ELSE NEEDS JWT
+                        // 🔒 EVERYTHING ELSE
                         .anyRequest().authenticated()
                 )
 
@@ -62,7 +62,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ CORS CONFIG (LOCAL + RAILWAY)
+    // ✅ CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
