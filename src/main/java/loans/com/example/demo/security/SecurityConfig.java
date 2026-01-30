@@ -1,4 +1,7 @@
+
+
 package loans.com.example.demo.security;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +19,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+
 @Configuration
 public class SecurityConfig {
 
     @Autowired
-    private JwtFilter jwtFilter;
+   private JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // 🔓 PUBLIC ENDPOINTS
+
                         .requestMatchers(
                                 "/",
                                 "/health",
