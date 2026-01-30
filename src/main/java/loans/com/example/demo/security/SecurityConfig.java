@@ -1,7 +1,4 @@
-
-
 package loans.com.example.demo.security;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -9,38 +6,45 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-
 @Configuration
 public class SecurityConfig {
 
     @Autowired
-   private JwtFilter jwtFilter;
+    private JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // 🔥 ENABLE CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 🔥 DISABLE CSRF (JWT)
                 .csrf(csrf -> csrf.disable())
 
+                // 🔥 STATELESS SESSION
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // 🔥 AUTH RULES
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 PUBLIC ENDPOINTS
+                        // ✅ ALLOW PREFLIGHT REQUESTS (MOST IMPORTANT)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // 🔓 PUBLIC ENDPOINTS
                         .requestMatchers(
                                 "/",
                                 "/health",
@@ -54,7 +58,7 @@ public class SecurityConfig {
                                 "/api/users/admin/register"
                         ).permitAll()
 
-                        // 🔐 ROLE BASED
+                        // 🔐 ROLE BASED ACCESS
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/**").hasAuthority("USER")
 
@@ -62,15 +66,16 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // JWT FILTER
+                // 🔥 JWT FILTER
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ CORS CONFIG
+    // ✅ CORS CONFIGURATION
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
@@ -81,11 +86,14 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 
+    // ✅ AUTH MANAGER
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration) throws Exception {
