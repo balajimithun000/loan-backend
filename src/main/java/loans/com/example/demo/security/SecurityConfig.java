@@ -62,17 +62,21 @@ public class SecurityConfig {
 
         return http.build();
     }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(false); // must be false when origin is specific
-        config.setAllowedOrigins(List.of(
+        config.setAllowCredentials(false);
+
+        // ✅ THIS IS THE FIX
+        config.setAllowedOriginPatterns(List.of(
                 "https://*.netlify.app"
         ));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
         config.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source =
@@ -81,6 +85,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(
