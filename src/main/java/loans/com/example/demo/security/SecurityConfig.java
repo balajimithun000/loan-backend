@@ -75,7 +75,7 @@ public class SecurityConfig {
 
         config.setAllowCredentials(true);
         config.setAllowedOriginPatterns(List.of(
-                "http://localhost:5173",
+                "https://dazzling-dragon-6c4dfa.netlify.app",
                 "https://*.up.railway.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
