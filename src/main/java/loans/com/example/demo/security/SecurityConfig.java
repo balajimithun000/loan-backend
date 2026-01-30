@@ -1,6 +1,5 @@
 package loans.com.example.demo.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,8 +18,11 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,17 +30,15 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔓 ALWAYS ALLOW OPTIONS (MOST IMPORTANT)
+                        // ✅ VERY IMPORTANT – allow preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 🔓 PUBLIC APIs
+                        // ✅ PUBLIC
                         .requestMatchers(
                                 "/",
                                 "/error",
@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/users/login",
                                 "/api/users/register",
-                                "/api/user/admin/register"
+                                "/api/users/admin/register"
                         ).permitAll()
 
                         // 🔐 ROLE BASED
@@ -58,19 +58,17 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ SINGLE SOURCE OF CORS TRUTH
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(false); // IMPORTANT
+        config.setAllowCredentials(false); // must be false when origin is specific
         config.setAllowedOrigins(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
