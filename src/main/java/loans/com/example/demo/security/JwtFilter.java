@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,38 +23,32 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getRequestURI();
+
+        return
+                request.getMethod().equalsIgnoreCase("OPTIONS") ||
+                        path.equals("/") ||
+                        path.equals("/error") ||
+                        path.equals("/favicon.ico") ||
+                        path.equals("/health") ||
+                        path.equals("/api/users/login") ||
+                        path.equals("/api/users/register") ||
+                        path.equals("/api/users/admin/register");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 🔥 VERY IMPORTANT: allow preflight
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String path = request.getRequestURI();
-
-        // 🔓 Public endpoints
-        if (
-                path.startsWith("/actuator") ||
-                        path.equals("/") ||
-                        path.equals("/error") ||
-                        path.equals("/health") ||
-                        path.equals("/api/users/login") ||
-                        path.equals("/api/users/register") ||
-                        path.equals("/api/users/admin/register")
-        ) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -81,4 +74,3 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
-
