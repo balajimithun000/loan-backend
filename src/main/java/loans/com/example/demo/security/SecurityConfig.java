@@ -80,8 +80,7 @@ public class SecurityConfig {
 
         config.setAllowCredentials(true);
         config.setAllowedOriginPatterns(List.of(
-                "https://dazzling-dragon-6c4dfa.netlify.app",
-                "https://*.up.railway.app"
+                "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
