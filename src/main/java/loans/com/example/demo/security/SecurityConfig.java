@@ -70,7 +70,7 @@ public class SecurityConfig {
 
         config.setAllowCredentials(false); // must be false when origin is specific
         config.setAllowedOrigins(List.of(
-                "https://dazzling-dragon-6c4dfa.netlify.app"
+                "https://*.netlify.app"
         ));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
