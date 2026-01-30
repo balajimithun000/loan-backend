@@ -6,11 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,29 +26,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔥 ENABLE CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // 🔥 DISABLE CSRF (JWT)
                 .csrf(csrf -> csrf.disable())
 
-                // 🔥 STATELESS SESSION
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 🔥 AUTH RULES
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ ALLOW PREFLIGHT REQUESTS (MOST IMPORTANT)
+                        // 🔓 ALWAYS ALLOW OPTIONS (MOST IMPORTANT)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 🔓 PUBLIC ENDPOINTS
+                        // 🔓 PUBLIC APIs
                         .requestMatchers(
                                 "/",
-                                "/health",
                                 "/error",
-                                "/actuator/**"
+                                "/favicon.ico",
+                                "/health"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.POST,
@@ -58,41 +52,38 @@ public class SecurityConfig {
                                 "/api/users/admin/register"
                         ).permitAll()
 
-                        // 🔐 ROLE BASED ACCESS
+                        // 🔐 ROLE BASED
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/users/**").hasAuthority("USER")
 
-                        // 🔒 EVERYTHING ELSE
                         .anyRequest().authenticated()
                 )
 
-                // 🔥 JWT FILTER
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ CORS CONFIGURATION
+    // ✅ SINGLE SOURCE OF CORS TRUTH
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of(
+        config.setAllowCredentials(false); // IMPORTANT
+        config.setAllowedOrigins(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
 
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-    // ✅ AUTH MANAGER
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration) throws Exception {
