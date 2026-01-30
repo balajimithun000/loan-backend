@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/users/login",
                                 "/api/users/register",
-                                "/api/users/admin/register"
+                                "/api/admin/register"
                         ).permitAll()
 
                         // 🔐 ROLE BASED
