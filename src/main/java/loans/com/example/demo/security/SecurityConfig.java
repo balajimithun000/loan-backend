@@ -43,7 +43,7 @@ public class SecurityConfig {
                                 "/",
                                 "/error",
                                 "/favicon.ico",
-                                "/health"
+                                "/actuator/**"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.POST,
