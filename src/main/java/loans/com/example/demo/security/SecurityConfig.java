@@ -71,13 +71,14 @@ public class SecurityConfig {
 
         // ✅ THIS IS THE FIX
         config.setAllowedOriginPatterns(List.of(
-                "https://*.netlify.app"
+                "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
 
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization",
+                "Content-Type"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
