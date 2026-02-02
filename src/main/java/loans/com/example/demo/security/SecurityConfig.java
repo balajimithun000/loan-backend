@@ -36,27 +36,17 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 VERY IMPORTANT – allow OPTIONS first
+                        // ✅ OPTIONS MUST BE ALLOWED
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ✅ PUBLIC
-                        .requestMatchers(
-                                "/",
-                                "/error",
-                                "/favicon.ico",
-                                "/actuator/**"
-                        ).permitAll()
-
+                        // ✅ PUBLIC APIs
                         .requestMatchers(HttpMethod.POST,
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/api/users/admin/register"
                         ).permitAll()
 
-                        // 🔐 ROLE BASED
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/users/**").hasAuthority("USER")
-
+                        // 🔐 ALL OTHERS NEED JWT
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -64,23 +54,20 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 🔥 THIS IS THE REAL CORS FIX
+    // 🔥 REAL CORS CONFIG (MOST IMPORTANT)
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
         config.setAllowedOrigins(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
-        config.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type"
-        ));
+        config.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -88,11 +75,14 @@ public class SecurityConfig {
 
         FilterRegistrationBean<CorsFilter> bean =
                 new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // ⭐ MOST IMPORTANT
+
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE); // ⭐ VERY IMPORTANT
         return bean;
     }
 
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration) throws Exception {
-        return configuration.
+        return configuration.getAuthenticationManager();
+    }
+}

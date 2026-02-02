@@ -22,20 +22,10 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
+    // ✅ ONLY OPTIONS SHOULD BYPASS JWT
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-
-        String path = request.getRequestURI();
-
-        return
-                request.getMethod().equalsIgnoreCase("OPTIONS") ||
-                        path.equals("/") ||
-                        path.equals("/error") ||
-                        path.equals("/favicon.ico") ||
-                        path.equals("/health") ||
-                        path.equals("/api/users/login") ||
-                        path.equals("/api/users/register") ||
-                        path.equals("/api/users/admin/register");
+        return request.getMethod().equalsIgnoreCase("OPTIONS");
     }
 
     @Override
@@ -44,12 +34,6 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
-        // ✅ VERY IMPORTANT: let OPTIONS pass fully
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String authHeader = request.getHeader("Authorization");
 
@@ -63,14 +47,14 @@ public class JwtFilter extends OncePerRequestFilter {
             String username = jwtUtil.extractUsername(token);
             String role = jwtUtil.extractRole(token);
 
-            UsernamePasswordAuthenticationToken authToken =
+            UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             username,
                             null,
                             List.of(new SimpleGrantedAuthority(role))
                     );
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
