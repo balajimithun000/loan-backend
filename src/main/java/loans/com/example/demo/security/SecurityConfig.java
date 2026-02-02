@@ -31,10 +31,10 @@ public class SecurityConfig {
 
         http
                 // 🔥 THIS IS THE KEY
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
 
                 .csrf(csrf -> csrf.disable())
-
+                .cors()
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
