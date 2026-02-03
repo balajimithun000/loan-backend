@@ -22,10 +22,15 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // ✅ ONLY OPTIONS SHOULD BYPASS
+    // ✅ DO NOT FILTER PUBLIC & OPTIONS
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getMethod().equalsIgnoreCase("OPTIONS");
+
+        String path = request.getRequestURI();
+
+        return request.getMethod().equalsIgnoreCase("OPTIONS")
+                || path.equals("/api/users/login")
+                || path.equals("/api/users/register");
     }
 
     @Override
@@ -37,8 +42,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        // 🔥 IMPORTANT: do NOT send error here
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -54,10 +60,11 @@ public class JwtFilter extends OncePerRequestFilter {
                             List.of(new SimpleGrantedAuthority(role))
                     );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication);
 
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            filterChain.doFilter(request, response);
             return;
         }
 
