@@ -10,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @Configuration
 public class SecurityConfig {
 
@@ -23,21 +24,21 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // ✅ ENABLE CORS (MANDATORY)
+                .cors(cors -> {})
+
                 // ❌ CSRF not needed for JWT
                 .csrf(csrf -> csrf.disable())
-
-                // ❌ DO NOT enable cors() here
-                // CORS is handled by CorsFilterConfig
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ⭐ OPTIONS always allowed
+                        // ✅ OPTIONS always allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ⭐ Public APIs
+                        // ✅ Public APIs
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/register",
@@ -45,11 +46,11 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
-                        // ⭐ Protected APIs
+                        // 🔒 Protected APIs
                         .anyRequest().authenticated()
                 )
 
-                // ⭐ JWT filter
+                // 🔑 JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
