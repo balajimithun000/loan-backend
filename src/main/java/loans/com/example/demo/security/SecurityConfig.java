@@ -6,7 +6,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -17,7 +16,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -30,53 +28,41 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ ENABLE CORS (THIS IS MUST)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // ❌ CSRF OFF (JWT API)
                 .csrf(csrf -> csrf.disable())
-
-                // ❌ NO SESSION
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ PREFLIGHT MUST PASS
+                        // 🔥 VERY IMPORTANT
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ✅ PUBLIC APIs
+                        // public APIs
                         .requestMatchers(
                                 "/api/users/login",
-                                "/api/users/register",
-                                "/api/users/admin/register"
+                                "/api/users/register"
                         ).permitAll()
 
-                        // 🔐 EVERYTHING ELSE NEEDS TOKEN
+                        // everything else secured
                         .anyRequest().authenticated()
-                )
+                );
 
-                // 🔑 JWT FILTER
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ ONLY CORS CONFIG — NO EXTRA CLASS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
-
-        config.setAllowCredentials(false); // token header only
-        config.setAllowedOrigins(List.of(
-                "https://dazzling-dragon-6c4dfa.netlify.app"
-        ));
-        config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
+        config.setAllowedOrigins(
+                List.of("https://dazzling-dragon-6c4dfa.netlify.app")
+        );
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
