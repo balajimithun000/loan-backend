@@ -28,55 +28,79 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // 🔥 CORS MUST BE FIRST
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // ❌ CSRF not needed for JWT
                 .csrf(csrf -> csrf.disable())
 
+                // 🔐 Stateless session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // 🔓 Authorization rules
                 .authorizeHttpRequests(auth -> auth
+
+                        // ✅ VERY IMPORTANT – OPTIONS must be allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // ✅ Public APIs
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/register",
-                                "/api/users/admin/register"
+                                "/api/users/admin/register",
+                                "/actuator/**"
                         ).permitAll()
+
+                        // 🔒 Everything else secured
                         .anyRequest().authenticated()
                 )
 
+                // 🔐 JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // 🌍 GLOBAL CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
+        // 🔥 Netlify frontend origin
         config.setAllowedOriginPatterns(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
 
+        // 🔥 Required methods
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
 
+        // 🔥 Required headers
         config.setAllowedHeaders(List.of("*"));
+
+        // Optional
         config.setExposedHeaders(List.of("Authorization"));
+
+        // ❌ DO NOT ENABLE credentials
+        // config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
 
         return source;
     }
 
+    // 🔑 Authentication Manager
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+            AuthenticationConfiguration configuration
+    ) throws Exception {
         return configuration.getAuthenticationManager();
     }
 }
-
