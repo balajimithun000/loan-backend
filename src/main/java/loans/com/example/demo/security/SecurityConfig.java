@@ -16,29 +16,24 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // JWT use panrom, CSRF thevai illa
                 .csrf(csrf -> csrf.disable())
 
-                // ⭐ VERY IMPORTANT – enable CORS
+                // 🔥 IMPORTANT
                 .cors(cors -> {})
 
-                // Session illa (JWT)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ⭐ Preflight OPTIONS must be allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ⭐ Public APIs
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
                                 "/api/users/admin/register"
                         ).permitAll()
 
-                        // 🔒 Remaining all secured
                         .anyRequest().authenticated()
                 );
 

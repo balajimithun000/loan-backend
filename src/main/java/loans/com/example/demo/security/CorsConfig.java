@@ -3,8 +3,8 @@ package loans.com.example.demo.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
@@ -16,11 +16,7 @@ public class CorsConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // Frontend needs cookies / auth headers in future
-        config.setAllowCredentials(true);
-
-        // ⭐ Netlify frontend
-        config.setAllowedOriginPatterns(List.of(
+        config.setAllowedOrigins(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
 
@@ -29,13 +25,12 @@ public class CorsConfig {
         ));
 
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }
