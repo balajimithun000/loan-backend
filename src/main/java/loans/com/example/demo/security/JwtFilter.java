@@ -1,9 +1,8 @@
-package loans.com.example.demo.security;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import loans.com.example.demo.security.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,15 +21,15 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // ✅ DO NOT FILTER PUBLIC & OPTIONS
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
-        String path = request.getRequestURI();
+        String path = request.getServletPath();
 
         return request.getMethod().equalsIgnoreCase("OPTIONS")
                 || path.equals("/api/users/login")
-                || path.equals("/api/users/register");
+                || path.equals("/api/users/register")
+                || path.equals("/api/users/admin/register");
     }
 
     @Override
@@ -42,7 +41,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // 🔥 IMPORTANT: do NOT send error here
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -60,11 +58,10 @@ public class JwtFilter extends OncePerRequestFilter {
                             List.of(new SimpleGrantedAuthority(role))
                     );
 
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
