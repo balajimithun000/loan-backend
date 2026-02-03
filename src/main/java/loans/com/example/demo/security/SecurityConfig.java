@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,8 +29,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔥 THIS IS MANDATORY
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // 🔥 FINAL & CORRECT WAY (Spring Security 6)
+                .cors(Customizer.withDefaults())
 
                 .csrf(csrf -> csrf.disable())
 
@@ -39,7 +40,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // ✅ VERY IMPORTANT – OPTIONS MUST BE FREE
+                        // ✅ PRE-FLIGHT MUST BE FREE
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // ✅ PUBLIC APIs
@@ -49,7 +50,7 @@ public class SecurityConfig {
                                 "/api/users/admin/register"
                         ).permitAll()
 
-                        // 🔒 EVERYTHING ELSE
+                        // 🔒 PROTECTED APIs
                         .anyRequest().authenticated()
                 )
 
@@ -58,21 +59,25 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    // 🔥 GLOBAL CORS CONFIG (USED AUTOMATICALLY)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 THIS IS THE KEY FIX
+        // ✅ ALLOW ALL ORIGINS (Netlify + Local + Future)
         config.setAllowedOriginPatterns(List.of("*"));
 
+        // ✅ ALLOW ALL METHODS
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
 
+        // ✅ ALLOW ALL HEADERS
         config.setAllowedHeaders(List.of("*"));
 
-        // Optional but good
+        // Optional
         config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source =
@@ -81,7 +86,6 @@ public class SecurityConfig {
 
         return source;
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(
