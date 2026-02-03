@@ -28,9 +28,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ VERY IMPORTANT
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -38,16 +36,12 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ PREFLIGHT MUST BE ALLOWED
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // ✅ PUBLIC APIs
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/api/users/admin/register"
                         ).permitAll()
-
                         .anyRequest().authenticated()
                 )
 
@@ -61,7 +55,6 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Netlify domain allow
         config.setAllowedOriginPatterns(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
@@ -72,7 +65,6 @@ public class SecurityConfig {
 
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
-        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -87,3 +79,4 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 }
+
