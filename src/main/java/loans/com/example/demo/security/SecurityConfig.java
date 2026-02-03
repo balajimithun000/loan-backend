@@ -58,27 +58,22 @@ public class SecurityConfig {
 
         return http.build();
     }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // ⚠️ MUST MATCH EXACT ORIGIN
-        config.setAllowedOrigins(List.of(
-                "https://dazzling-dragon-6c4dfa.netlify.app"
-        ));
+        // 🔥 THIS IS THE KEY FIX
+        config.setAllowedOriginPatterns(List.of("*"));
 
-        // ⚠️ MUST INCLUDE OPTIONS
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
 
-        // ⚠️ content-type is required for JSON
-        config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+        config.setAllowedHeaders(List.of("*"));
 
-        // ❌ DO NOT SET allowCredentials
-        // config.setAllowCredentials(true);
+        // Optional but good
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -86,6 +81,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(
