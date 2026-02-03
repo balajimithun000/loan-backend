@@ -19,7 +19,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // ⭐ THIS IS THE FIX ⭐
+                // ⭐ THIS MUST EXIST
                 .cors(Customizer.withDefaults())
 
                 .sessionManagement(session ->
@@ -28,13 +28,11 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
                                 "/api/users/admin/register"
                         ).permitAll()
-
                         .anyRequest().authenticated()
                 );
 
