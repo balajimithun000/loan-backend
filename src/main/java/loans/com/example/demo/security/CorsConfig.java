@@ -16,18 +16,26 @@ public class CorsConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 TEMP – allow everything
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("*"));
-        config.setAllowedHeaders(List.of("*"));
+        // Frontend needs cookies / auth headers in future
+        config.setAllowCredentials(true);
 
-        // 🔴 MUST be false when using "*"
-        config.setAllowCredentials(false);
+        // ⭐ Netlify frontend
+        config.setAllowedOriginPatterns(List.of(
+                "https://dazzling-dragon-6c4dfa.netlify.app"
+        ));
+
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }

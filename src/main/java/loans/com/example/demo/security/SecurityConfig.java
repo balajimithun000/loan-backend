@@ -8,33 +8,27 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
-//@Configuration
-//@EnableWebSecurity
+@Configuration
+@EnableWebSecurity
 public class SecurityConfig {
-
-    private final CorsConfig corsConfig;
-
-    public SecurityConfig(CorsConfig corsConfig) {
-        this.corsConfig = corsConfig;
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // JWT use panrom, CSRF thevai illa
                 .csrf(csrf -> csrf.disable())
 
-                // ⭐ IMPORTANT
-                .cors(cors -> cors.configurationSource(
-                        corsConfig.corsConfigurationSource()
-                ))
+                // ⭐ VERY IMPORTANT – enable CORS
+                .cors(cors -> {})
 
+                // Session illa (JWT)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ⭐ OPTIONS preflight must be allowed
+                        // ⭐ Preflight OPTIONS must be allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // ⭐ Public APIs
@@ -44,6 +38,7 @@ public class SecurityConfig {
                                 "/api/users/admin/register"
                         ).permitAll()
 
+                        // 🔒 Remaining all secured
                         .anyRequest().authenticated()
                 );
 
