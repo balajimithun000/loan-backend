@@ -16,9 +16,9 @@ public class CorsConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // ⭐ VERY IMPORTANT
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true);
 
+        // ⭐ EXACT frontend origin
         config.setAllowedOrigins(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
@@ -35,7 +35,6 @@ public class CorsConfig {
                 new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }
