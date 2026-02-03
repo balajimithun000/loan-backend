@@ -28,27 +28,33 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // 🔥 THIS IS MANDATORY
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .csrf(csrf -> csrf.disable())
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 VERY IMPORTANT
+                        // ✅ VERY IMPORTANT – OPTIONS MUST BE FREE
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // public APIs
+                        // ✅ PUBLIC APIs
                         .requestMatchers(
                                 "/api/users/login",
-                                "/api/users/register"
+                                "/api/users/register",
+                                "/api/users/admin/register"
                         ).permitAll()
 
-                        // everything else secured
+                        // 🔒 EVERYTHING ELSE
                         .anyRequest().authenticated()
-                );
+                )
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                // 🔐 JWT FILTER
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -57,12 +63,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(
-                List.of("https://dazzling-dragon-6c4dfa.netlify.app")
-        );
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+
+        // ⚠️ MUST MATCH EXACT ORIGIN
+        config.setAllowedOrigins(List.of(
+                "https://dazzling-dragon-6c4dfa.netlify.app"
+        ));
+
+        // ⚠️ MUST INCLUDE OPTIONS
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+
+        // ⚠️ content-type is required for JSON
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+
+        // ❌ DO NOT SET allowCredentials
+        // config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
