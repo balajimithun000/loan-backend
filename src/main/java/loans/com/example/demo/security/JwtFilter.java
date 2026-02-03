@@ -27,10 +27,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        return request.getMethod().equalsIgnoreCase("OPTIONS")
-                || path.equals("/api/users/login")
-                || path.equals("/api/users/register")
-                || path.equals("/api/users/admin/register");
+        // ⭐ MOST IMPORTANT: OPTIONS bypass
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            return true;
+        }
+
+        return path.startsWith("/api/users/login")
+                || path.startsWith("/api/users/register")
+                || path.startsWith("/api/users/admin/register");
     }
 
     @Override
@@ -49,6 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             String token = authHeader.substring(7);
+
             String username = jwtUtil.extractUsername(token);
             String role = jwtUtil.extractRole(token);
 
@@ -59,10 +64,12 @@ public class JwtFilter extends OncePerRequestFilter {
                             List.of(new SimpleGrantedAuthority(role))
                     );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication);
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid or expired JWT");
             return;
         }
 

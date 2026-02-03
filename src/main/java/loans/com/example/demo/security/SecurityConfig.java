@@ -56,14 +56,25 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
+        // IMPORTANT
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of(
+
+        // Railway + Netlify safe config
+        config.setAllowedOriginPatterns(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
+
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
-        config.setAllowedHeaders(List.of("*"));
+
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin"
+        ));
+
         config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source =
