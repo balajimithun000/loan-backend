@@ -16,14 +16,19 @@ public class CorsConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of(
+        // ⭐ VERY IMPORTANT
+        config.setAllowCredentials(false);
+
+        config.setAllowedOrigins(List.of(
                 "https://dazzling-dragon-6c4dfa.netlify.app"
         ));
+
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
+
         config.setAllowedHeaders(List.of("*"));
+
         config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source =
