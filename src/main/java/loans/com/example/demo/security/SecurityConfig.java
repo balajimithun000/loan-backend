@@ -3,7 +3,6 @@ package loans.com.example.demo.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,8 +18,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // ⭐ THIS MUST EXIST
-                .cors(Customizer.withDefaults())
+                // ❌ DO NOT configure cors here
+                // cors handled by CorsFilter
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
