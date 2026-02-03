@@ -7,16 +7,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CorsConfigurationSource corsConfigurationSource;
+    private final CorsConfig corsConfig;
 
-    public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
-        this.corsConfigurationSource = corsConfigurationSource;
+    public SecurityConfig(CorsConfig corsConfig) {
+        this.corsConfig = corsConfig;
     }
 
     @Bean
@@ -25,20 +24,26 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // 🔥 THIS IS THE KEY
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                // ⭐ IMPORTANT
+                .cors(cors -> cors.configurationSource(
+                        corsConfig.corsConfigurationSource()
+                ))
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // ⭐ OPTIONS preflight must be allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // ⭐ Public APIs
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
                                 "/api/users/admin/register"
                         ).permitAll()
+
                         .anyRequest().authenticated()
                 );
 
