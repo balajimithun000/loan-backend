@@ -29,9 +29,6 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔥 FINAL & CORRECT WAY (Spring Security 6)
-                .cors(Customizer.withDefaults())
-
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -39,57 +36,17 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-
-                        // ✅ PRE-FLIGHT MUST BE FREE
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // ✅ PUBLIC APIs
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/api/users/admin/register"
                         ).permitAll()
-
-                        // 🔒 PROTECTED APIs
                         .anyRequest().authenticated()
                 )
 
-                // 🔐 JWT FILTER
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    // 🔥 GLOBAL CORS CONFIG (USED AUTOMATICALLY)
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-
-        CorsConfiguration config = new CorsConfiguration();
-
-        // ✅ ALLOW ALL ORIGINS (Netlify + Local + Future)
-        config.setAllowedOriginPatterns(List.of("*"));
-
-        // ✅ ALLOW ALL METHODS
-        config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
-
-        // ✅ ALLOW ALL HEADERS
-        config.setAllowedHeaders(List.of("*"));
-
-        // Optional
-        config.setExposedHeaders(List.of("Authorization"));
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-
-        return source;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
     }
 }

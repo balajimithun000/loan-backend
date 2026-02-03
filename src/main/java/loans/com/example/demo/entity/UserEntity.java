@@ -1,5 +1,6 @@
 package loans.com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class UserEntity {
     @Column(unique=true)
     private String email;
 
+    @JsonIgnore
     private String password;
 
     private int age;
