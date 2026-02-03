@@ -8,19 +8,25 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ❌ CSRF not needed for JWT
                 .csrf(csrf -> csrf.disable())
 
-                // ⭐ THIS LINE IS VERY IMPORTANT ⭐
+                // ⭐ CORS from CorsConfig
                 .cors(Customizer.withDefaults())
 
                 .sessionManagement(session ->
@@ -28,19 +34,19 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ⭐ OPTIONS preflight must be allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ⭐ Public APIs
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
                                 "/api/users/admin/register"
                         ).permitAll()
 
-                        // 🔒 Others
                         .anyRequest().authenticated()
-                );
+                )
+
+                // ⭐ JWT filter MUST
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
