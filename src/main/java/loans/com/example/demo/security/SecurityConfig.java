@@ -67,13 +67,13 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5174",
-                "https://loan-frontend-5bp.pages.dev"
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://*.pages.dev"
         ));
 
         config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                "GET","POST","PUT","DELETE","OPTIONS"
         ));
 
         config.setAllowedHeaders(List.of("*"));
@@ -86,6 +86,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(
