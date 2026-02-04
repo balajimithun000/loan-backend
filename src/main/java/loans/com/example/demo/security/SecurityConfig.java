@@ -61,15 +61,17 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ GLOBAL CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of(
-                "http://localhost:*",
-                "https://*.pages.dev"
+        // 🔥 EXACT domains add pannu
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:4173",
+                "https://loan-frontend-5bp.pages.dev",
+                "https://c73b3ad0.loan-frontend-5bp.pages.dev"
         ));
 
         config.setAllowedMethods(List.of(
@@ -77,7 +79,9 @@ public class SecurityConfig {
         ));
 
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+
+        // 🔥 important
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -86,6 +90,7 @@ public class SecurityConfig {
 
         return source;
     }
+
 
 
     @Bean
