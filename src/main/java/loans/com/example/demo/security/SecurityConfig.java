@@ -2,8 +2,8 @@ package loans.com.example.demo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,25 +28,30 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ CORRECT CORS (Spring Security 6+)
-                .cors(Customizer.withDefaults())
+                // ✅ CORRECT CORS (Spring Security 6)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // ✅ DISABLE CSRF
+                // ✅ DISABLE CSRF (JWT)
                 .csrf(csrf -> csrf.disable())
 
-                // ✅ STATELESS SESSION
+                // ✅ STATELESS
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 // ✅ AUTH RULES
                 .authorizeHttpRequests(auth -> auth
+
+                        // 🔥 VERY IMPORTANT – allow preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/api/users/admin/register",
                                 "/actuator/**"
                         ).permitAll()
+
                         .anyRequest().authenticated()
                 )
 
@@ -56,9 +61,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ===============================
-    // GLOBAL CORS CONFIG
-    // ===============================
+    // ✅ GLOBAL CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -78,6 +81,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
 
         return source;
