@@ -27,8 +27,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // ⭐ MOST IMPORTANT: OPTIONS bypass
-        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+        // OPTIONS preflight bypass
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
@@ -57,11 +57,16 @@ public class JwtFilter extends OncePerRequestFilter {
             String username = jwtUtil.extractUsername(token);
             String role = jwtUtil.extractRole(token);
 
+            // ROLE_ prefix handled safely
+            String authority = role.startsWith("ROLE_")
+                    ? role
+                    : "ROLE_" + role;
+
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             username,
                             null,
-                            List.of(new SimpleGrantedAuthority(role))
+                            List.of(new SimpleGrantedAuthority(authority))
                     );
 
             SecurityContextHolder.getContext()

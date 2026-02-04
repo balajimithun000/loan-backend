@@ -3,6 +3,7 @@ package loans.com.example.demo.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import loans.com.example.demo.entity.Role;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,53 +14,55 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
-            "SmartLoanSecretKeyMustBeAtLeast32CharsLong!".getBytes()
-    );
-    private final long EXPIRATION = 1000 * 60 * 60 * 10;
+    // ✅ Railway ENV variable
+    private final SecretKey secretKey;
+
+    private final long EXPIRATION = 1000 * 60 * 60 * 10; // 10 hours
+
+    public JwtUtil(
+            @Value("${jwt.secret}") String secret
+    ) {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(String username, Role role) {
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role.name());
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SECRET_KEY)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String extractUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
+        return parseClaims(token)
                 .getSubject();
     }
 
     public String extractRole(String token) {
-        return (String) Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("role");
-
+        return parseClaims(token)
+                .get("role", String.class);
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean validateToken(String token) {
+        try {
+            parseClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getExpiration()
-                .before(new Date());
-    }
-
-    public boolean validateToken(String token, String username) {
-        return extractUsername(token).equals(username) && !isTokenExpired(token);
+                .getBody();
     }
 }
