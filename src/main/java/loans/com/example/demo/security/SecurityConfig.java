@@ -2,15 +2,15 @@ package loans.com.example.demo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
@@ -36,13 +36,15 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 PUBLIC API
-                        .requestMatchers("/api/users/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 
-                        // 🔥 actuator
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(
+                                "/api/users/register",
+                                "/api/users/login",
+                                "/api/users/admin/register",
+                                "/actuator/**"
+                        ).permitAll()
 
-                        // 🔒 secured api
                         .anyRequest().authenticated()
                 )
 
@@ -51,21 +53,17 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 EXACT FRONTEND DOMAIN ONLY
         config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "https://loan-frontend-5bp.pages.dev"
+                "https://loan-frontend-5bp.pages.dev",
+                "http://localhost:5173"
         ));
 
-        config.setAllowedMethods(List.of(
-                "GET","POST","PUT","DELETE","OPTIONS"
-        ));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 
         config.setAllowedHeaders(List.of("*"));
 
@@ -78,8 +76,6 @@ public class SecurityConfig {
 
         return source;
     }
-
-
 
     @Bean
     public AuthenticationManager authenticationManager(
