@@ -2,7 +2,6 @@ package loans.com.example.demo.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,14 +36,13 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 VERY IMPORTANT
-                        .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
-
                         // 🔥 PUBLIC API
                         .requestMatchers("/api/users/**").permitAll()
 
+                        // 🔥 actuator
                         .requestMatchers("/actuator/**").permitAll()
 
+                        // 🔒 secured api
                         .anyRequest().authenticated()
                 )
 
@@ -53,14 +51,16 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of(
-                "http://localhost:*",
-                "https://*.pages.dev"
+        // 🔥 EXACT FRONTEND DOMAIN ONLY
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://loan-frontend-5bp.pages.dev"
         ));
 
         config.setAllowedMethods(List.of(
@@ -69,7 +69,6 @@ public class SecurityConfig {
 
         config.setAllowedHeaders(List.of("*"));
 
-        // 🔥 VERY IMPORTANT
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
@@ -79,6 +78,8 @@ public class SecurityConfig {
 
         return source;
     }
+
+
 
     @Bean
     public AuthenticationManager authenticationManager(

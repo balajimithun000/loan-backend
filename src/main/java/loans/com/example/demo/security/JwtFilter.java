@@ -27,12 +27,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // 🔥 skip public endpoints
+        // 🔥 skip public endpoints completely
+        if (path.startsWith("/api/users")) return true;
+
+        // 🔥 skip actuator
+        if (path.startsWith("/actuator")) return true;
+
+        // 🔥 skip preflight
         if (request.getMethod().equalsIgnoreCase("OPTIONS")) return true;
 
-        return path.startsWith("/api/users/login")
-                || path.startsWith("/api/users/register")
-                || path.startsWith("/api/users/admin/register");
+        return false;
     }
 
     @Override
@@ -45,7 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request,response);
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -76,6 +80,6 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 }
