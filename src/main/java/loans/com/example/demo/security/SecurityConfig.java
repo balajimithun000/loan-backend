@@ -28,13 +28,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ CORRECT CORS (Spring Security 6)
+                // ✅ CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // ✅ DISABLE CSRF (JWT)
+                // ✅ DISABLE CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // ✅ STATELESS
+                // ✅ STATELESS JWT
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -42,16 +42,16 @@ public class SecurityConfig {
                 // ✅ AUTH RULES
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 VERY IMPORTANT – allow preflight
+                        // 🔥 VERY IMPORTANT
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        .requestMatchers(
-                                "/api/users/login",
-                                "/api/users/register",
-                                "/api/users/admin/register",
-                                "/actuator/**"
-                        ).permitAll()
+                        // 🔥 PUBLIC APIs (FULL USERS PATH)
+                        .requestMatchers("/api/users/**").permitAll()
 
+                        // actuator
+                        .requestMatchers("/actuator/**").permitAll()
+
+                        // 🔐 PROTECTED
                         .anyRequest().authenticated()
                 )
 
@@ -61,12 +61,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // ✅ GLOBAL CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 EXACT domains add pannu
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "http://localhost:4173",
@@ -80,7 +80,7 @@ public class SecurityConfig {
 
         config.setAllowedHeaders(List.of("*"));
 
-        // 🔥 important
+        // ⚠️ axios la withCredentials=false so false dhan vechu
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
@@ -91,11 +91,10 @@ public class SecurityConfig {
         return source;
     }
 
-
-
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+            AuthenticationConfiguration configuration
+    ) throws Exception {
         return configuration.getAuthenticationManager();
     }
 }
