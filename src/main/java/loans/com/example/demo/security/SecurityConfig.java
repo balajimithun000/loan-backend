@@ -28,50 +28,39 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // ✅ CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // ✅ DISABLE CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // ✅ STATELESS JWT
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // ✅ AUTH RULES
                 .authorizeHttpRequests(auth -> auth
 
                         // 🔥 VERY IMPORTANT
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 
-                        // 🔥 PUBLIC APIs (FULL USERS PATH)
+                        // 🔥 PUBLIC API
                         .requestMatchers("/api/users/**").permitAll()
 
-                        // actuator
                         .requestMatchers("/actuator/**").permitAll()
 
-                        // 🔐 PROTECTED
                         .anyRequest().authenticated()
                 )
 
-                // ✅ JWT FILTER
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ✅ GLOBAL CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:4173",
-                "https://loan-frontend-5bp.pages.dev",
-                "https://c73b3ad0.loan-frontend-5bp.pages.dev"
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://*.pages.dev"
         ));
 
         config.setAllowedMethods(List.of(
@@ -80,7 +69,7 @@ public class SecurityConfig {
 
         config.setAllowedHeaders(List.of("*"));
 
-        // ⚠️ axios la withCredentials=false so false dhan vechu
+        // 🔥 VERY IMPORTANT
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
@@ -93,8 +82,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration
-    ) throws Exception {
+            AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 }
