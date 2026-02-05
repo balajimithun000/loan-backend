@@ -38,6 +38,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 
+                        // public endpoints
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
@@ -45,6 +46,15 @@ public class SecurityConfig {
                                 "/actuator/**"
                         ).permitAll()
 
+                        // admin only
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
+
+                        // profile access
+                        .requestMatchers("/api/users/profile")
+                        .hasAnyRole("USER","ADMIN")
+
+                        // others login required
                         .anyRequest().authenticated()
                 )
 
