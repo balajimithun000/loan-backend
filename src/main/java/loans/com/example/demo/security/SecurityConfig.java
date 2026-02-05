@@ -48,7 +48,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -63,7 +64,9 @@ public class SecurityConfig {
                 "http://localhost:5173"
         ));
 
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedMethods(
+                List.of("GET","POST","PUT","DELETE","OPTIONS")
+        );
 
         config.setAllowedHeaders(List.of("*"));
 
@@ -79,7 +82,9 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+            AuthenticationConfiguration configuration)
+            throws Exception {
+
         return configuration.getAuthenticationManager();
     }
 }

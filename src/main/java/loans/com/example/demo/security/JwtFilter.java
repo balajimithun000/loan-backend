@@ -27,13 +27,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // 🔥 skip public endpoints completely
         if (path.startsWith("/api/users")) return true;
-
-        // 🔥 skip actuator
         if (path.startsWith("/actuator")) return true;
-
-        // 🔥 skip preflight
         if (request.getMethod().equalsIgnoreCase("OPTIONS")) return true;
 
         return false;
@@ -43,8 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain)
+            throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
@@ -60,9 +55,10 @@ public class JwtFilter extends OncePerRequestFilter {
             String username = jwtUtil.extractUsername(token);
             String role = jwtUtil.extractRole(token);
 
-            String authority = role.startsWith("ROLE_")
-                    ? role
-                    : "ROLE_" + role;
+            String authority =
+                    role.startsWith("ROLE_")
+                            ? role
+                            : "ROLE_" + role;
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -71,10 +67,12 @@ public class JwtFilter extends OncePerRequestFilter {
                             List.of(new SimpleGrantedAuthority(authority))
                     );
 
-            SecurityContextHolder.getContext()
+            SecurityContextHolder
+                    .getContext()
                     .setAuthentication(authentication);
 
         } catch (Exception e) {
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Invalid JWT");
             return;
