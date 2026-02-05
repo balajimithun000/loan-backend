@@ -40,7 +40,7 @@ public class SecurityConfig {
 
                         // public endpoints
                         .requestMatchers(
-                                "/api/users/register",
+                                "/api/users",
                                 "/api/users/login",
                                 "/api/users/admin/register",
                                 "/actuator/**"
