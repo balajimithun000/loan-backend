@@ -1,4 +1,3 @@
-
 package loans.com.example.demo.security;
 
 import org.springframework.context.annotation.Bean;
@@ -31,9 +30,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
 
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(form -> form.disable())
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -42,30 +38,17 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 
-                        // PUBLIC ENDPOINTS
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/login",
                                 "/api/users/admin/register",
-                                "/actuator/**",
-                                "/api/users/**"
-
+                                "/actuator/**"
                         ).permitAll()
 
-                        // ADMIN ONLY
-                        .requestMatchers("/api/admin/**")
-                        .hasRole("ADMIN")
-
-                        // USER + ADMIN
-                        .requestMatchers("/api/users/profile")
-                        .hasAnyRole("USER","ADMIN")
-
-                        // OTHER REQUESTS
                         .anyRequest().authenticated()
                 )
 
-                .addFilterBefore(jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -80,9 +63,7 @@ public class SecurityConfig {
                 "http://localhost:5173"
         ));
 
-        config.setAllowedMethods(
-                List.of("GET","POST","PUT","DELETE","OPTIONS")
-        );
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 
         config.setAllowedHeaders(List.of("*"));
 
@@ -98,9 +79,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration)
-            throws Exception {
-
+            AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 }
