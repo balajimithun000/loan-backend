@@ -1,3 +1,4 @@
+
 package loans.com.example.demo.security;
 
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
 
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(form -> form.disable())
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -38,23 +42,25 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 
-                        // public endpoints
+                        // PUBLIC ENDPOINTS
                         .requestMatchers(
-                                "/api/users",
+                                "/api/users/register",
                                 "/api/users/login",
                                 "/api/users/admin/register",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/api/users/**"
+
                         ).permitAll()
 
-                        // admin only
+                        // ADMIN ONLY
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
 
-                        // profile access
+                        // USER + ADMIN
                         .requestMatchers("/api/users/profile")
                         .hasAnyRole("USER","ADMIN")
 
-                        // others login required
+                        // OTHER REQUESTS
                         .anyRequest().authenticated()
                 )
 
